@@ -1,17 +1,24 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <li class="user" v-for="movie in movies" v-bind:key="user.attributes.name">
+      {{ movie.attributes.name }}
+    </li>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import axios from 'axios'
 export default {
   name: 'app',
-  components: {
-    HelloWorld
+  data(){
+    return {
+      movies: []
+    }
+  },
+  created: function () {
+    axios.get('/api/movies')
+      .then(response => response.data)
+      .then(json => this.movies = json.data);
   }
 }
 </script>
