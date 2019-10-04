@@ -1,8 +1,14 @@
 <template>
   <div id="app">
-    <li class="user" v-for="movie in movies" v-bind:key="user.attributes.name">
-      {{ movie.attributes.name }}
-    </li>
+    <div v-if='movies.length'>
+      <li class="movie" v-for="movie in movies" v-bind:key="movie.id">
+        {{ movie.id }}
+      </li>
+    </div>
+
+    <div v-else>
+      <p>Loading...</p>
+    </div>
   </div>
 </template>
 
@@ -18,7 +24,9 @@ export default {
   created: function () {
     axios.get('/api/movies')
       .then(response => response.data)
-      .then(json => this.movies = json.data);
+      .then(json => {
+        this.movies = json.movies;
+      })
   }
 }
 </script>
