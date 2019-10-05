@@ -2,7 +2,7 @@
   <div id="app">
     <div v-if='movies.length'>
       <li class="movie" v-for="movie in movies" v-bind:key="movie.id">
-        {{ movie.id }}
+        {{ movie.id }} <button @click='deleteMovie(movie.id)'>Delete {{movie.id}}</button>
       </li>
     </div>
 
@@ -14,13 +14,26 @@
 
 <script>
 import axios from 'axios'
+
 export default {
   name: 'app',
-  data(){
+
+  data() {
     return {
       movies: []
     }
   },
+
+  methods: {
+    deleteMovie(movieId) {
+      axios.delete(`/api/movies/${movieId}`)
+        .then(response => response.data)
+        .then(json => {
+          this.movies = this.movies.filter(movie => movie.id !== movieId)
+        })
+    }
+  },
+
   created: function () {
     axios.get('/api/movies')
       .then(response => response.data)
