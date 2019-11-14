@@ -4,9 +4,9 @@ import { makeServer } from "./server";
 
 if (process.env.NODE_ENV === "development") {
   window.server = makeServer();
-} else if (window.shouldRunMirage) {
+} else if (window.Cypress) {
   window.server = makeServer("test");
-  window.mirageFunctions.forEach(f => f(window.server));
+  window.runCypressMirageFunctions();
 }
 
 Vue.config.productionTip = false;

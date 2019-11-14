@@ -28,33 +28,28 @@ let mirageFunctions = [];
 
 Cypress.on("window:before:load", win => {
   win.mirageFunctions = mirageFunctions;
-  win.resetMirageFunctions = function() {
-    mirageFunctions = [];
+  win.runCypressMirageFunctions = function() {
+    win.mirageFunctions.forEach(f => f(win.server));
   };
 });
 
-Cypress.Commands.add("mirage", (appIsRunning, userFunction) => {
-  if (appIsRunning) {
-    cy.window().then(win => {
+afterEach(() => {
+  mirageFunctions = [];
+
+  cy.window({ log: false }).then(win => {
+    if (win.server) {
+      win.server.shutdown();
+      win.server = null;
+    }
+  });
+});
+
+Cypress.Commands.add("mirage", userFunction => {
+  cy.window().then(win => {
+    if (win.server) {
       userFunction(win.server);
-    });
-  } else {
-    mirageFunctions.push(userFunction);
-  }
-
-  // cy.window().then(win => {
-  //   if (win.server) {
-  //     userFunction(win.server);
-  //   } else {
-  //     Cypress.on("window:before:load", win => {
-  //       win.mirageFunctions = win.mirageFunctions || [];
-
-  //       win.mirageFunctions.push(userFunction);
-  //     });
-  //   }
-  // });
-
-  // Cypress.on("window:unload", win => {
-  //   // console.log("unloading...");
-  // });
+    } else {
+      mirageFunctions.push(userFunction);
+    }
+  });
 });

@@ -1,12 +1,21 @@
 <template>
   <div id="app">
-    <h1>Moviezzzs!</h1>
+    <h1>Movies</h1>
     <div v-if="loading">
-      <p>Loading...</p>
+      <p data-testid="loading">Loading...</p>
+    </div>
+
+    <div v-else-if="movies.length === 0">
+      <p>No movies!</p>
     </div>
 
     <div v-else>
-      <li class="movie" v-for="movie in movies" v-bind:key="movie.id">
+      <li
+        class="movie"
+        v-for="movie in movies"
+        v-bind:key="movie.id"
+        data-testid="movie"
+      >
         {{ movie.id }}
         <button @click="deleteMovie(movie.id)">Delete {{ movie.id }}</button>
       </li>
@@ -39,8 +48,6 @@ export default {
   },
 
   created: function() {
-    console.log("in the vue app");
-
     axios.get("/api/movies").then(res => {
       this.loading = false;
       this.movies = res.data.movies;
