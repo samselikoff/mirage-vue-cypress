@@ -23,3 +23,38 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
+let mirageFunctions = [];
+
+Cypress.on("window:before:load", win => {
+  win.mirageFunctions = mirageFunctions;
+  win.resetMirageFunctions = function() {
+    mirageFunctions = [];
+  };
+});
+
+Cypress.Commands.add("mirage", (appIsRunning, userFunction) => {
+  if (appIsRunning) {
+    cy.window().then(win => {
+      userFunction(win.server);
+    });
+  } else {
+    mirageFunctions.push(userFunction);
+  }
+
+  // cy.window().then(win => {
+  //   if (win.server) {
+  //     userFunction(win.server);
+  //   } else {
+  //     Cypress.on("window:before:load", win => {
+  //       win.mirageFunctions = win.mirageFunctions || [];
+
+  //       win.mirageFunctions.push(userFunction);
+  //     });
+  //   }
+  // });
+
+  // Cypress.on("window:unload", win => {
+  //   // console.log("unloading...");
+  // });
+});
