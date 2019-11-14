@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h1>Movies</h1>
+    <h1>Movies asdf</h1>
     <div v-if="loading">
       <p data-testid="loading">Loading...</p>
     </div>
