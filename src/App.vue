@@ -10,13 +10,21 @@
     </div>
 
     <div v-else>
+      <form @submit.prevent="createMovie">
+        <label>Add a movie:</label>
+        <input v-model="newMovieTitle" type="text" />
+      </form>
+
       <li
         class="movie"
+        style="list-style: none;"
         v-for="movie in movies"
         v-bind:key="movie.id"
         data-testid="movie"
       >
-        {{ movie.id }}
+        <form style="display: inline;" @submit.prevent="updateMovie(movie)">
+          <input type="text" v-model="movie.title" />
+        </form>
         <button @click="deleteMovie(movie.id)">Delete {{ movie.id }}</button>
       </li>
     </div>
@@ -32,11 +40,27 @@ export default {
   data() {
     return {
       loading: true,
+      newMovieTitle: "",
       movies: []
     };
   },
 
   methods: {
+    updateMovie(movie) {
+      axios.patch(`/api/movies/${movie.id}`, { movie }).then(json => {
+        let i = this.movies.findIndex(m => m.id === movie.id);
+        this.movies[i] = json.data.movie;
+      });
+    },
+    createMovie() {
+      axios
+        .post("/api/movies", { movie: { title: this.newMovieTitle } })
+        .then(json => {
+          this.movies.push(json.data.movie);
+          this.newMovieTitle = "";
+        });
+    },
+
     deleteMovie(movieId) {
       axios
         .delete(`/api/movies/${movieId}`)
