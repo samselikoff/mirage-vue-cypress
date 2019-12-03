@@ -1,6 +1,6 @@
-import { Server, Model } from "@miragejs/server";
+import { Server, Factory, Model, RestSerializer } from "@miragejs/server";
 
-export function makeServer(environment = "development") {
+export function makeServer({ environment = "development" } = {}) {
   return new Server({
     environment,
 
@@ -8,9 +8,21 @@ export function makeServer(environment = "development") {
       movie: Model
     },
 
+    factories: {
+      movie: Factory.extend({
+        title(i) {
+          return `Movie ${i + 1}`;
+        }
+      })
+    },
+
+    serializers: {
+      application: RestSerializer
+    },
+
     routes() {
       this.namespace = "api";
-      this.resource("movie");
+      this.resource("movies");
     },
 
     seeds(server) {
