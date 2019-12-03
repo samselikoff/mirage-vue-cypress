@@ -1,5 +1,20 @@
 import { makeServer } from "../../../src/server";
 
+Cypress.on("window:before:load", win => {
+  win.handleFromCypress = function(request) {
+    return fetch(request.url, {
+      method: request.method,
+      body: request.requestBody
+    }).then(res => {
+      if (res.headers.map["content-type"] === "application/json") {
+        return res.json();
+      } else {
+        return "";
+      }
+    });
+  };
+});
+
 let server;
 
 beforeEach(() => {
@@ -8,20 +23,6 @@ beforeEach(() => {
 
 afterEach(() => {
   server.shutdown();
-});
-
-Cypress.on("window:before:load", win => {
-  win.handleFromCypress = function(request) {
-    console.log(request.method);
-
-    return fetch(request.url, { method: request.method }).then(res => {
-      if (res.headers.map["content-type"] === "application/json") {
-        return res.json();
-      } else {
-        return "";
-      }
-    });
-  };
 });
 
 it("shows a message if there are no movies", function() {
@@ -40,6 +41,33 @@ it("works with 5 movies", function() {
   cy.get('[data-testid="movie"]').should("have.length", 5);
 });
 
+it("can add a movie", function() {
+  cy.visit("/");
+  cy.get("[data-testid=add-movie]").type("New movie{enter}");
+
+  cy.get('[data-testid="movie"]').should("have.length", 1);
+
+  cy.should(() => {
+    expect(server.db.movies).to.have.lengthOf(1);
+    expect(server.db.movies[0].title).to.eq("New movie");
+  });
+});
+
+it("edit a movie", function() {
+  server.create("movie", { title: "Old title" });
+
+  cy.visit("/");
+  cy.get("[data-testid=edit-movie]")
+    .clear()
+    .type("New title{enter}");
+
+  cy.get("[data-testid='edit-movie']").should("have.value", "New title");
+
+  cy.should(() => {
+    expect(server.db.movies[0].title).to.eq("New title");
+  });
+});
+
 it("can delete a movie", function() {
   server.create("movie");
 
@@ -51,4 +79,12 @@ it("can delete a movie", function() {
   cy.should(() => {
     expect(server.db.movies).to.be.to.empty;
   });
+});
+
+it("can visit a movie detail", function() {
+  let movie = server.create("movie", { title: "Star Wars" });
+
+  cy.visit(`/movies/${movie.id}`);
+
+  cy.contains("Details for Star Wars").should("be.visible");
 });
