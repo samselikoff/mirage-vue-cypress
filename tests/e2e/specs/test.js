@@ -1,20 +1,5 @@
 import { makeServer } from "../../../src/server";
 
-Cypress.on("window:before:load", win => {
-  win.handleFromCypress = function(request) {
-    return fetch(request.url, {
-      method: request.method,
-      body: request.requestBody
-    }).then(res => {
-      if (res.headers.map["content-type"] === "application/json") {
-        return res.json();
-      } else {
-        return "";
-      }
-    });
-  };
-});
-
 let server;
 
 beforeEach(() => {

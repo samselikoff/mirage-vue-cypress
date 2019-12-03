@@ -10,20 +10,22 @@ if (process.env.NODE_ENV === "development") {
   window.server = makeServer();
 }
 
+/*
+  If Cypress is running, define a new (2nd) Mirage instance in the app's
+  iframe. This is not going to use any of the config or data from our 
+  "real" Mirage server – instead, it is just going to intercept requests,
+  and call the window.handleFromCypress function to respond.
+
+  That function gets set from the Cypress iframe, which has access to the
+  "real" Mirage server.
+ */
 if (window.Cypress) {
   new Server({
     routes() {
-      this.get("/*", (schema, request) => {
-        return window.handleFromCypress(request);
-      });
-      this.patch("/*", (schema, request) => {
-        return window.handleFromCypress(request);
-      });
-      this.post("/*", (schema, request) => {
-        return window.handleFromCypress(request);
-      });
-      this.delete("/*", (schema, request) => {
-        return window.handleFromCypress(request);
+      ["get", "put", "patch", "post", "delete"].forEach(method => {
+        this[method]("/*", (schema, request) => {
+          return window.handleFromCypress(request);
+        });
       });
     }
   });
